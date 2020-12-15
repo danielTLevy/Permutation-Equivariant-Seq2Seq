@@ -2,7 +2,7 @@
 import random
 import argparse
 import os
-
+from tqdm import tqdm
 import numpy as np
 import torch
 
@@ -182,7 +182,9 @@ def test_accuracy(model_to_test, pairs):
     accuracies = []
     model.eval()
     with torch.no_grad():
-        for pair in pairs:
+        progress = tqdm(pairs,  desc="Loss: ", position=0, leave=True)
+  
+        for pair in progress:
             input_tensor, output_tensor = pair
             model_output = model_to_test(input_tensor=input_tensor)
             accuracies.append(sentence_correct(output_tensor, model_output))
