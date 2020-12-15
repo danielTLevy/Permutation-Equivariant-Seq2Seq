@@ -219,10 +219,10 @@ if __name__ == '__main__':
     if args.equivariance == 'verb':
         in_equivariances = ['jump', 'run', 'walk', 'look']
         out_equivariances = ['JUMP', 'RUN', 'WALK', 'LOOK']
-    if args.equivariance == 'verb_order':
+    elif args.equivariance == 'verb_order':
         in_equivariances = ['jump', 'run', 'walk', 'look']
         out_equivariances = ['RUN', 'WALK', 'JUMP', 'LOOK']
-    if args.equivariance == 'verb_length':
+    elif args.equivariance == 'verb_length':
         in_equivariances = ['jump', 'run', 'walk', 'look']
         out_equivariances = ['RUN', 'WALK', 'JUMP']
     elif args.equivariance == 'direction':
@@ -316,7 +316,7 @@ if __name__ == '__main__':
         if (iteration + 1) % args.print_freq == 0:
             print_loss_avg = print_loss_total / args.print_freq
             print_loss_total = 0
-            print('%s iterations: %s' % (iteration + 1, print_loss_avg))
+            print('\n%s iterations: %s' % (iteration + 1, print_loss_avg))
 
         if (iteration + 1) % args.save_freq == 0:
             # save model if is better
