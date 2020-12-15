@@ -164,7 +164,7 @@ def test_accuracy(model_to_test, pairs):
         _, sentence_ints = model_sentence.data.topk(1)
         # If there is no EOS token, take the complete list
         try:
-            eos_location = (sentence_ints == EOS_token).nonzero()[0][0]
+            eos_location = torch.nonzero(sentence_ints == EOS_token)[0][0]
         except:
             eos_location = len(sentence_ints) - 2
         model_sentence = sentence_ints[:eos_location+1]

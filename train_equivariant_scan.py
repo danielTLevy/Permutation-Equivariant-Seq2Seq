@@ -84,11 +84,11 @@ parser.add_argument('--save_dir',
                     help='Top-level directory for saving experiment')
 parser.add_argument('--print_freq', 
                     type=int, 
-                    default=1000, 
+                    default=50, 
                     help='Frequency with which to print training loss')
 parser.add_argument('--save_freq', 
                     type=int, 
-                    default=5000,
+                    default=2000,
                     help='Frequency with which to save models during training')
 args = parser.parse_args()
 
@@ -192,7 +192,7 @@ def test_accuracy(model_to_test, pairs):
         _, sentence_ints = model_sentence.data.topk(1)
         # If there is no EOS token, take the complete list
         try:
-            eos_location = (sentence_ints == EOS_token).nonzero()[0][0]
+            eos_location = torch.nonzero(sentence_ints == EOS_token)[0][0]
         except:
             eos_location = len(sentence_ints) - 2
         model_sentence = sentence_ints[:eos_location+1]
@@ -291,7 +291,6 @@ if __name__ == '__main__':
     criterion = nn.NLLLoss().to(device)
 
     # Initialize printing / plotting variables
-    plot_losses = []
     print_loss_total = 0
     plot_loss_total = 0
 
@@ -316,8 +315,7 @@ if __name__ == '__main__':
         if (iteration + 1) % args.print_freq == 0:
             print_loss_avg = print_loss_total / args.print_freq
             print_loss_total = 0
-            print('\n%s iterations: %s' % (iteration + 1, print_loss_avg))
-
+            progress.set_description("Loss: {:.4f}".format(print_loss_avg))
         if (iteration + 1) % args.save_freq == 0:
             # save model if is better
             if args.validation_size > 0.:
@@ -325,7 +323,7 @@ if __name__ == '__main__':
                 if val_acc > best_acc:
                     best_acc = val_acc
                     save_path = os.path.join(model_path, 'best_validation.pt')
-                    print('Best validation accuracy at iteration %s: %s' % (iteration + 1, val_acc))
+                    print('\nBest validation accuracy at iteration %s: %s' % (iteration + 1, val_acc))
                     torch.save(model.state_dict(), save_path)
 
     # Save fully trained model

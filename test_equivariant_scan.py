@@ -79,7 +79,7 @@ parser.add_argument('--bidirectional',
                     help="Boolean to use bidirectional encoder.")
 # Equivariance options:
 parser.add_argument('--equivariance', 
-                    choices=['verb', 'direction', 'verb+direction', 'none'])
+                    choices=['verb', 'verb_order', 'verb_length', 'direction', 'verb+direction', 'none'])
 # Optimization and training hyper-parameters
 parser.add_argument('--split', 
                     help='Each possible split defines a different experiment as proposed by [1]',
@@ -96,7 +96,7 @@ parser.add_argument('--batch_size',
                     help='batch size for training (unused)')
 parser.add_argument('--validation_size', 
                     type=float, 
-                    default=0.2, 
+                    default=0.1,
                     help='Validation proportion to use for early-stopping')
 parser.add_argument('--n_iters', 
                     type=int, 
@@ -115,11 +115,11 @@ parser.add_argument('--save_dir',
                     help='Top-level directory for saving experiment')
 parser.add_argument('--print_freq', 
                     type=int, 
-                    default=1000, 
+                    default=50, 
                     help='Frequency with which to print training loss')
 parser.add_argument('--save_freq', 
                     type=int, 
-                    default=200000, 
+                    default=2000,
                     help='Frequency with which to save models during training')
 
 
@@ -168,7 +168,7 @@ def test_accuracy(model_to_test, pairs):
         _, sentence_ints = model_sentence.data.topk(1)
         # If there is no EOS token, take the complete list
         try:
-            eos_location = (sentence_ints == EOS_token).nonzero()[0][0]
+            eos_location = torch.nonzero(sentence_ints == EOS_token)[0][0]
         except:
             eos_location = len(sentence_ints) - 2
         model_sentence = sentence_ints[:eos_location+1]
@@ -212,6 +212,12 @@ if __name__ == '__main__':
     if experiment_arguments.equivariance == 'verb':
         in_equivariances = ['jump', 'run', 'walk', 'look']
         out_equivariances = ['JUMP', 'RUN', 'WALK', 'LOOK']
+    elif experiment_arguments.equivariance == 'verb_order':
+        in_equivariances = ['jump', 'run', 'walk', 'look']
+        out_equivariances = ['RUN', 'WALK', 'JUMP', 'LOOK']
+    elif experiment_arguments.equivariance == 'verb_length':
+        in_equivariances = ['jump', 'run', 'walk', 'look']
+        out_equivariances = ['RUN', 'WALK', 'JUMP']
     elif experiment_arguments.equivariance == 'direction':
         in_equivariances = ['right', 'left']
         out_equivariances = ['TURN_RIGHT', 'TURN_LEFT']
