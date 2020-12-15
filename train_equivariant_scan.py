@@ -218,8 +218,13 @@ if __name__ == '__main__':
     train_pairs, test_pairs = get_scan_split(split=args.split)
     if args.equivariance == 'verb':
         in_equivariances = ['jump', 'run', 'walk', 'look']
-        #out_equivariances = ['JUMP', 'RUN', 'WALK', 'LOOK']
+        out_equivariances = ['JUMP', 'RUN', 'WALK', 'LOOK']
+    if args.equivariance == 'verb_order':
+        in_equivariances = ['jump', 'run', 'walk', 'look']
         out_equivariances = ['RUN', 'WALK', 'JUMP', 'LOOK']
+    if args.equivariance == 'verb_length':
+        in_equivariances = ['jump', 'run', 'walk', 'look']
+        out_equivariances = ['RUN', 'WALK', 'JUMP']
     elif args.equivariance == 'direction':
         in_equivariances = ['right', 'left']
         out_equivariances = ['TURN_RIGHT', 'TURN_LEFT']
