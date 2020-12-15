@@ -2,7 +2,7 @@
 import random
 import argparse
 import os
-
+from tqdm import tqdm
 import torch
 import torch.nn as nn
 
@@ -65,11 +65,11 @@ parser.add_argument('--batch_size',
                     help='Number of pairs between each gradient step')
 parser.add_argument('--validation_size', 
                     type=float, 
-                    default=0.2, 
+                    default=0.1, 
                     help='Validation proportion to use for early-stopping')
 parser.add_argument('--n_iters', 
                     type=int, 
-                    default=200000, 
+                    default=200000,
                     help='number of training iterations')
 parser.add_argument('--learning_rate', 
                     type=float, 
@@ -88,7 +88,7 @@ parser.add_argument('--print_freq',
                     help='Frequency with which to print training loss')
 parser.add_argument('--save_freq', 
                     type=int, 
-                    default=200000, 
+                    default=5000,
                     help='Frequency with which to save models during training')
 args = parser.parse_args()
 
@@ -218,7 +218,8 @@ if __name__ == '__main__':
     train_pairs, test_pairs = get_scan_split(split=args.split)
     if args.equivariance == 'verb':
         in_equivariances = ['jump', 'run', 'walk', 'look']
-        out_equivariances = ['JUMP', 'RUN', 'WALK', 'LOOK']
+        #out_equivariances = ['JUMP', 'RUN', 'WALK', 'LOOK']
+        out_equivariances = ['RUN', 'WALK', 'JUMP', 'LOOK']
     elif args.equivariance == 'direction':
         in_equivariances = ['right', 'left']
         out_equivariances = ['TURN_RIGHT', 'TURN_LEFT']
@@ -292,7 +293,9 @@ if __name__ == '__main__':
     # Enter training loop
     best_acc = 0.
     model_path = utils.create_exp_dir(args)
-    for iteration, pair_batch in enumerate(pair_generator(training_pairs, args.batch_size)):
+    progress = tqdm(enumerate(pair_generator(training_pairs, args.batch_size)),
+                    desc="Loss: ", total=int(len(training_pairs)/args.batch_size), position=0, leave=True)
+    for iteration, pair_batch in progress:
         # Compute loss (and take one gradient step)
         loss = train(batch=pair_batch,
                      model_to_train=model,
