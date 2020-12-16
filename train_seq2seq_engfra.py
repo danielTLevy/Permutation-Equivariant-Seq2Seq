@@ -59,7 +59,7 @@ parser.add_argument('--split',
                     help='Each possible split defines a different experiment as proposed by [1]')
 parser.add_argument('--validation_size', 
                     type=float, 
-                    default=0.2,
+                    default=0.05,
                     help='Validation proportion to use for early-stopping')
 parser.add_argument('--n_iters', 
                     type=int, 
@@ -268,6 +268,8 @@ if __name__ == '__main__':
                     print('\nBest validation accuracy at iteration %s: %s' % (iteration + 1, val_acc))
                     save_path = os.path.join(model_path, 'model_trained_%s.pt' % iteration)
                     torch.save(model.state_dict(), save_path)
+                else:
+                    print('\nNew validation accuracy %s worse than previous best %s' % (val_acc, best_acc))
 
     # Save fully trained model
     save_path = os.path.join(model_path, 'model_fully_trained.pt')
