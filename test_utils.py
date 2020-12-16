@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import torch
 from tqdm import tqdm
+import numpy as np
 from perm_equivariant_seq2seq.utils import tensor_from_sentence
 from nltk.translate.bleu_score import sentence_bleu
 
@@ -35,7 +36,6 @@ def test_accuracy(model_to_test, pairs, use_bleu=False):
     
     def sentence_correct(target, model_sentence):
         if len(model_sentence) != len(target):
-            print(len(model_sentence) - len(target))
             return torch.tensor(0, device=device)
         else:
             correct = model_sentence == target
@@ -55,7 +55,7 @@ def test_accuracy(model_to_test, pairs, use_bleu=False):
                 bleu_scores.append(bleu_score(output_tensor, model_sentence))
     mean_accuracy = torch.stack(accuracies).type(torch.float).mean()
     if use_bleu:
-        mean_bleu = torch.stack(bleu_scores).type(torch.float).mean()
+        mean_bleu = np.mean(bleu_scores)
         return mean_accuracy, mean_bleu
     else:
         return mean_accuracy

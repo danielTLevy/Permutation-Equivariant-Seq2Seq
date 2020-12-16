@@ -63,10 +63,12 @@ def get_equivariant_engfra_languages(pairs, input_equivariances, output_equivari
     input_lang = EquivariantLanguage('eng', input_equivariances)
     output_lang = EquivariantLanguage('fra', output_equivariances)
     # Set up languages
+    print("building equivariant languages")
     for pair in pairs:
         input_lang.add_sentence(pair[0])
         output_lang.add_sentence(pair[1])
     # Manipulate indices
+    print("rearranging indices")
     input_lang.rearrange_indices()
     output_lang.rearrange_indices()
     return input_lang, output_lang

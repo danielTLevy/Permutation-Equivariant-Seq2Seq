@@ -227,15 +227,16 @@ if __name__ == '__main__':
         if iteration % args.save_freq == 0:
             # save model if is better
             if args.validation_size > 0.:
-                val_acc, val_bleu = test_accuracy(model, validation_pairs, True).item()
+                val_acc, val_bleu = test_accuracy(model, validation_pairs, True)
+                val_acc = val_acc.item()
                 if val_bleu > best_bleu:
-                    best_acc = val_acc
+                    best_bleu = val_bleu
                     save_path = os.path.join(model_path, 'best_validation.pt')
-                    print('\nBest BLEU score at iteration %s: %s' % (iteration + 1, val_bleu))
-                    save_path = os.path.join(model_path, 'model_trained_%s.pt' % iteration)
+                    print('\nBest validation accuracy at iteration %s: %s' % (iteration + 1, val_acc))
+                    print('\nBest validation BLEU score at iteration %s: %s' % (iteration + 1, val_bleu))
                     torch.save(model.state_dict(), save_path)
                 else:
-                    print('\nNew validation accuracy %s worse than previous best %s' % (val_acc, best_acc))
+                    print('\nNew validation BLEU %s worse than previous best %s' % (val_bleu, best_bleu))
 
     # Save fully trained model
     save_path = os.path.join(model_path, 'model_fully_trained.pt')

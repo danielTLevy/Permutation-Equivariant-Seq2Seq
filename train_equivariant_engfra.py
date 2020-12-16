@@ -183,6 +183,7 @@ def train(batch,
 if __name__ == '__main__':
     # Load data
     train_pairs, test_pairs = get_engfra_split(split=args.split)
+    print("Got training and testing pairs")
     if args.equivariance == 'noun':
         in_equivariances = ["tom","something","book","car","time","problem","everyone","house","door","friends"]
         out_equivariances = ["tom","chose","livre", "voiture", "temps", "probleme", "monde", "maison", "porte", "amis"]
@@ -192,7 +193,7 @@ if __name__ == '__main__':
         get_equivariant_engfra_languages(pairs=train_pairs+test_pairs,
                                        input_equivariances=in_equivariances,
                                        output_equivariances=out_equivariances)
-
+    print("making symmetry group")
     input_symmetry_group = get_permutation_equivariance(eng_lang)
     output_symmetry_group = get_permutation_equivariance(fra_lang)
 
@@ -264,11 +265,13 @@ if __name__ == '__main__':
         if (iteration + 1) % args.save_freq == 0:
             # save model if is better
             if args.validation_size > 0.:
-                val_acc, val_bleu = test_accuracy(model, validation_pairs, True).item()
+                val_acc, val_bleu = test_accuracy(model, validation_pairs, True)
+                val_acc = val_acc.item()
                 if val_bleu > best_bleu:
                     best_bleu = val_bleu
                     save_path = os.path.join(model_path, 'best_validation.pt')
-                    print('\nBest BLEU score at iteration %s: %s' % (iteration + 1, val_bleu))
+                    print('\nBest validation accuracy at iteration %s: %s' % (iteration + 1, val_acc))
+                    print('\nBest validation BLEU score at iteration %s: %s' % (iteration + 1, val_bleu))
                     torch.save(model.state_dict(), save_path)
                 else:
                     print('\nNew validation BLEU %s worse than previous best %s' % (val_bleu, best_bleu))
