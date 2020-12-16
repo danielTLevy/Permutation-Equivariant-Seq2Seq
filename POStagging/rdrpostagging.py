@@ -3,6 +3,7 @@ from ImportRDSTagger import french_tagger, frenchDICT, english_tagger, englishDI
 from collections import Counter
 import pickle
 import os
+from sklearn.model_selection import train_test_split
 #from nltk.stem import WordNetLemmatizer
 #lemmatizer = WordNetLemmatizer()
 
@@ -11,7 +12,7 @@ def read_tagged_sentences (tagger,dic,sentence):
     verbs = []
     for word_tag in tagged_sentence.split():
         word, tag = word_tag.rsplit('/',1)
-        if tag[0].upper() == 'V':
+        if tag[0].upper() == 'N':
             verbs.append(word)
     return(verbs)
 
@@ -39,23 +40,36 @@ print(len(french_out))
 in_equivariances = []
 out_equivariances = []
 
-print(verb_pairs.most_common())
+verb_pairs_pruined = Counter()
 
 for ((eng_verb, fre_verb),frequency) in verb_pairs.most_common():
-    if eng_verb not in in_equivariances and fre_verb not in out_equivariances:
+    if eng_verb not in in_equivariances and fre_verb not in out_equivariances: #ensure equivariances are unique
         in_equivariances.append(eng_verb)
         out_equivariances.append(fre_verb)
-        print((eng_verb,fre_verb),frequency)
+        verb_pairs_pruined[(eng_verb,fre_verb)]+=1
+        #print((eng_verb,fre_verb),frequency)
 
 print(len(in_equivariances))
 print(len(out_equivariances))
 
+X_train, X_test, y_train, y_test = train_test_split(english_in, french_out, test_size=0.20, shuffle=True, random_state=42)
+print(X_test)
+print(y_test)
+
 os.chdir("../../output")
-with open('in.data', 'wb') as f:
-    pickle.dump(english_in, f)
-with open('out.data', 'wb') as f:
-        pickle.dump(french_out, f)
+with open('X_train.data', 'wb') as f:
+    pickle.dump(X_train, f)
+with open('X_test.data', 'wb') as f:
+        pickle.dump(X_test, f)
+with open('y_train.data', 'wb') as f:
+    pickle.dump(y_train, f)
+with open('y_test.data', 'wb') as f:
+    pickle.dump(y_test, f)
+with open('equivariance_frequencies.data', 'wb') as f:
+    pickle.dump(verb_pairs_pruined.most_common(), f)
+'''
 with open('in_equivariances.data', 'wb') as f:
     pickle.dump(in_equivariances, f)
 with open('out_equivariances.data', 'wb') as f:
     pickle.dump(out_equivariances, f)
+'''
