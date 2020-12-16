@@ -53,7 +53,7 @@ def test_accuracy(model_to_test, pairs, use_bleu=False):
             accuracies.append(sentence_correct(output_tensor, model_sentence))
             if use_bleu:
                 bleu_scores.append(bleu_score(output_tensor, model_sentence))
-    mean_accuracy = torch.stack(accuracies).type(torch.float).mean()
+    mean_accuracy = torch.stack(accuracies).type(torch.float).mean().item()
     if use_bleu:
         mean_bleu = np.mean(bleu_scores)
         return mean_accuracy, mean_bleu

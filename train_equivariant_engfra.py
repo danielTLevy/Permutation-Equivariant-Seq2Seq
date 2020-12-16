@@ -25,6 +25,7 @@ align and translate
 [3]: Russin et ak. 2019: Compositional generalization in a deep seq2seq model 
 by saparating syntax and semantics
 """
+os.environ["WANDB_MODE"] = "dryrun"
 wandb.init(project="equi_seq2seq", entity="teamname")
 
 
@@ -274,7 +275,7 @@ if __name__ == '__main__':
             # save model if is better
             if args.validation_size > 0.:
                 val_acc, val_bleu = test_accuracy(model, validation_pairs, True)
-                val_acc = val_acc.item()
+                val_acc = val_acc
                 wandb.log({"Validation Accuracy": val_acc, "Validation BLEU": val_bleu})
                 if val_bleu > best_bleu:
                     best_bleu = val_bleu

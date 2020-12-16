@@ -14,6 +14,7 @@ from perm_equivariant_seq2seq.engfra_data_utils import get_engfra_split, get_inv
 from perm_equivariant_seq2seq.utils import tensors_from_pair
 from test_utils import test_accuracy
 
+os.environ["WANDB_MODE"] = "dryrun"
 wandb.init(project="equi_seq2seq", entity="teamname")
 
 
@@ -234,7 +235,6 @@ if __name__ == '__main__':
             # save model if is better
             if args.validation_size > 0.:
                 val_acc, val_bleu = test_accuracy(model, validation_pairs, True)
-                val_acc = val_acc.item()
                 if val_bleu > best_bleu:
                     best_bleu = val_bleu
                     save_path = os.path.join(model_path, 'best_validation.pt')

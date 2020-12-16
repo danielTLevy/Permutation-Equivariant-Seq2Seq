@@ -180,8 +180,9 @@ if __name__ == '__main__':
 
     # Compute accuracy and print some translation
     if args.compute_train_accuracy:
-        train_acc = test_accuracy(model, training_eval)
-        print("Model train accuracy: %s" % train_acc.item())
+        train_acc, bleu_score = test_accuracy(model, training_eval, True)
+        print("Model train accuracy: %s" % train_acc)
+        print("Model bleu score: %s" % train_acc.item())
     if args.compute_test_accuracy:
         test_acc = test_accuracy(model, testing_pairs)
         print("Model test accuracy: %s" % test_acc.item())

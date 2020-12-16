@@ -1,4 +1,5 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+import scipy.sparse as sps
 import numpy as np
 import torch
 
@@ -30,18 +31,29 @@ def get_permutation_matrix(num_letters, permutations):
     Returns:
         (np.array) Permutation matrix as specified
     """
-    perm_mat = np.zeros((num_letters, num_letters))
+
+    perm_mat = sps.dok_matrix((num_letters, num_letters), dtype=float)
     for perm in permutations:
         perm_mat[perm[1] - 1, perm[0] - 1] = 1.
+
     # Enforce that every row / column has at least one element = 1
-    row_sums, columns_sums = perm_mat.sum(1), perm_mat.sum(0)
+    row_sums, columns_sums = np.squeeze(np.asarray(perm_mat.sum(1))), np.squeeze(np.asarray(perm_mat.sum(0)))
     for j in range(num_letters):
         if row_sums[j] == 0:
             perm_mat[j, j] = 1.
         if columns_sums[j] == 0:
             perm_mat[j, j] = 1.
-    assert np.linalg.det(perm_mat) in [1., -1], "Determinant != -+1., please ensure valid permutations"
-    return torch.tensor(perm_mat).to(device)
+            
+    #assert np.linalg.det(perm_mat) in [1., -1], "Determinant != -+1., please ensure valid permutations"
+    coo = sps.coo_matrix(perm_mat)
+    values = coo.data
+    indices = np.vstack((coo.row, coo.col))
+    
+    i = torch.LongTensor(indices)
+    v = torch.FloatTensor(values)
+    shape = coo.shape
+    
+    return torch.sparse.DoubleTensor(i, v, torch.Size(shape)).to(device).double()
 
 
 class PermutationSymmetry:
@@ -99,7 +111,7 @@ class CircularShift(PermutationSymmetry):
         self.tau1 = get_permutation_matrix(self.num_letters, self.init_perm)
         self.perm_matrices.append(self.tau1)
         for _ in range(self.num_equivariant - 2):
-            perm_mat = self.perm_matrices[-1] @ self.tau1
+            perm_mat = self.perm_matrices[-1].to_dense() @ self.tau1.to_dense()
             self.perm_matrices.append(perm_mat)
 
         self.index2mat, self.index2inverse, self.index2inverse_indices = {}, {}, {}
