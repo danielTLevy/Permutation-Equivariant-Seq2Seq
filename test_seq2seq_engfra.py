@@ -133,7 +133,7 @@ if __name__ == '__main__':
 
     # Load data
     train_pairs, test_pairs = get_engfra_split(split=experiment_arguments.split)
-    eng_lang, fra_lang = get_invariant_engfra_languages(train_pairs)
+    eng_lang, fra_lang = get_invariant_engfra_languages(train_pairs+test_pairs)
 
     # Initialize model
     model = BasicSeq2Seq(input_language=eng_lang,

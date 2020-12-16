@@ -150,7 +150,7 @@ if __name__ == '__main__':
     else:
         in_equivariances, out_equivariances = [], []
     equivariant_eng, equivariant_fra = \
-        get_equivariant_engfra_languages(pairs=train_pairs,
+        get_equivariant_engfra_languages(pairs=train_pairs+test_pairs,
                                        input_equivariances=in_equivariances,
                                        output_equivariances=out_equivariances)
 

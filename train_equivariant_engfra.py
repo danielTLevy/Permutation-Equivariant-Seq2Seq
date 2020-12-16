@@ -7,6 +7,8 @@ import os
 from tqdm import tqdm
 import torch
 import torch.nn as nn
+import wandb
+
 
 import perm_equivariant_seq2seq.utils as utils
 from perm_equivariant_seq2seq.equivariant_models import EquiSeq2Seq
@@ -23,6 +25,8 @@ align and translate
 [3]: Russin et ak. 2019: Compositional generalization in a deep seq2seq model 
 by saparating syntax and semantics
 """
+wandb.init(project="equi_seq2seq", entity="teamname")
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 SOS_token = 0
@@ -208,6 +212,8 @@ if __name__ == '__main__':
                         use_attention=args.use_attention,
                         bidirectional=args.bidirectional)
     model.to(device)
+    wandb.watch(model)
+
     # Initialize optimizers
     encoder_optimizer = torch.optim.Adam(model.encoder.parameters(),
                                          lr=args.learning_rate,
@@ -262,19 +268,25 @@ if __name__ == '__main__':
             print_loss_avg = print_loss_total / args.print_freq
             print_loss_total = 0
             progress.set_description("Loss: {:.4f}".format(print_loss_avg))
+            wandb.log({"Train Loss": print_loss_avg})
+
         if (iteration + 1) % args.save_freq == 0:
             # save model if is better
             if args.validation_size > 0.:
                 val_acc, val_bleu = test_accuracy(model, validation_pairs, True)
                 val_acc = val_acc.item()
+                wandb.log({"Validation Accuracy": val_acc, "Validation BLEU": val_bleu})
                 if val_bleu > best_bleu:
                     best_bleu = val_bleu
                     save_path = os.path.join(model_path, 'best_validation.pt')
                     print('\nBest validation accuracy at iteration %s: %s' % (iteration + 1, val_acc))
                     print('\nBest validation BLEU score at iteration %s: %s' % (iteration + 1, val_bleu))
                     torch.save(model.state_dict(), save_path)
+                    torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
+                    
                 else:
                     print('\nNew validation BLEU %s worse than previous best %s' % (val_bleu, best_bleu))
     # Save fully trained model
     save_path = os.path.join(model_path, 'model_fully_trained.pt')
     torch.save(model.state_dict(), save_path)
+    torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))

@@ -4,15 +4,17 @@ import random
 import argparse
 import os
 from tqdm import tqdm
-
 import torch
 import torch.nn as nn
+import wandb
 
 import perm_equivariant_seq2seq.utils as utils
 from perm_equivariant_seq2seq.models import BasicSeq2Seq
 from perm_equivariant_seq2seq.engfra_data_utils import get_engfra_split, get_invariant_engfra_languages
 from perm_equivariant_seq2seq.utils import tensors_from_pair
 from test_utils import test_accuracy
+
+wandb.init(project="equi_seq2seq", entity="teamname")
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -167,6 +169,8 @@ if __name__ == '__main__':
                          bidirectional=args.bidirectional,
                          num_layers=args.num_layers)
     model.to(device)
+    wandb.watch(model)
+
 
     # Initialize optimizers
     encoder_optimizer = torch.optim.Adam(model.encoder.parameters(), 
@@ -224,6 +228,8 @@ if __name__ == '__main__':
             print_loss_avg = print_loss_total / args.print_freq
             print_loss_total = 0
             progress.set_description("Loss: {:.4f}".format(print_loss_avg))
+            wandb.log({"Train Loss": print_loss_avg})
+
         if iteration % args.save_freq == 0:
             # save model if is better
             if args.validation_size > 0.:
@@ -235,9 +241,12 @@ if __name__ == '__main__':
                     print('\nBest validation accuracy at iteration %s: %s' % (iteration + 1, val_acc))
                     print('\nBest validation BLEU score at iteration %s: %s' % (iteration + 1, val_bleu))
                     torch.save(model.state_dict(), save_path)
+                    torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
+
                 else:
                     print('\nNew validation BLEU %s worse than previous best %s' % (val_bleu, best_bleu))
 
     # Save fully trained model
     save_path = os.path.join(model_path, 'model_fully_trained.pt')
     torch.save(model.state_dict(), save_path)
+    torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
