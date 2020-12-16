@@ -51,7 +51,7 @@ parser.add_argument('--bidirectional',
                     help="Boolean to use bidirectional encoder.")
 # Equivariance options:
 parser.add_argument('--equivariance', 
-                    choices=['verb', 'verb_order', 'verb_length', 'direction', 'verb+direction', 'none'])
+                    choices=['noun', 'verb', 'none'])
 # Optimization and training hyper-parameters
 parser.add_argument('--split', 
                     choices=[None, 'simple', 'add_book'],
