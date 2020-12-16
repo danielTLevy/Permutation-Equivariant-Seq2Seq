@@ -3,6 +3,7 @@ import unicodedata
 from io import open
 import re
 import os
+import pickle
 
 from perm_equivariant_seq2seq.symmetry_groups import LanguageInvariance
 from perm_equivariant_seq2seq.language_utils import Language, InvariantLanguage, EquivariantLanguage
@@ -32,11 +33,18 @@ def normalize_string_engfra(s):
 
 
 def read_engfra_data(path):
-    print(path)
     lines = open(path, encoding='utf-8').read().strip().split('\n')
     pairs = [[normalize_string_engfra(s) for s in l.split('\t')] for l in lines]
     return pairs
 
+def read_train_and_test(path):
+     X_train =  pickle.load(open(os.path.join(path, 'X_train.data'), 'rb'))
+     y_train =  pickle.load(open(os.path.join(path, 'y_train.data'), 'rb'))
+     X_test =  pickle.load(open(os.path.join(path, 'X_test.data'), 'rb'))
+     y_test =  pickle.load(open(os.path.join(path, 'y_test.data'), 'rb'))
+     training_pairs = list(map(list, zip(X_train, y_train)))
+     test_pairs = list(map(list, zip(X_test, y_test)))
+     return training_pairs, test_pairs
 
 def get_invariant_engfra_languages(pairs):
     # Initialize language classes
@@ -65,20 +73,21 @@ def get_equivariant_engfra_languages(pairs, input_equivariances, output_equivari
 
 
 def get_engfra_split(split=None):
-    assert split in ['simple'], \
+    assert split in ['simple', 'add_book'], \
         "Please choose valid experiment split"
-    DATA_DIR = 'POStagging/data/'
+    DATA_DIR = 'POStagging/'
 
     # Simple (non-generalization) split
     if split == 'simple':
-        dir_path = DATA_DIR
-        data_path = os.path.join(dir_path, 'eng-fra.txt')
+        data_path = os.path.join(DATA_DIR, 'ouputNounsShuffled')
+    elif split == 'add_book':
+        data_path = os.path.join(DATA_DIR, 'outputNounsSplitByBook')
 
     # Load data
-    all_pairs = read_engfra_data(data_path)
-    # TODO: Split training and test
-
-    test_pairs = training_pairs = all_pairs
+    #all_pairs = read_engfra_data(data_path)
+    training_pairs, test_pairs = read_train_and_test(data_path)
+    print("Training pairs: ", len(training_pairs))
+    print("Test pairs: ", len(test_pairs))
     return training_pairs, test_pairs
 
 

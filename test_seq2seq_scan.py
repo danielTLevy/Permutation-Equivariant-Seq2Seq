@@ -4,7 +4,7 @@ import argparse
 import os
 
 import torch
-from test_utils import test_accuracy
+from test_utils import test_accuracy, evaluate
 import perm_equivariant_seq2seq.utils as utils
 from perm_equivariant_seq2seq.models import BasicSeq2Seq
 from perm_equivariant_seq2seq.scan_data_utils import get_scan_split, get_invariant_scan_languages

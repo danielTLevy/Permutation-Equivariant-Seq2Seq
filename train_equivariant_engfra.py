@@ -10,7 +10,7 @@ import torch.nn as nn
 
 import perm_equivariant_seq2seq.utils as utils
 from perm_equivariant_seq2seq.equivariant_models import EquiSeq2Seq
-from perm_equivariant_seq2seq.scan_data_utils import get_scan_split, get_equivariant_scan_languages
+from perm_equivariant_seq2seq.engfra_data_utils import get_engfra_split, get_equivariant_engfra_languages
 from perm_equivariant_seq2seq.utils import tensors_from_pair
 from perm_equivariant_seq2seq.symmetry_groups import get_permutation_equivariance
 from test_utils import test_accuracy
@@ -54,9 +54,7 @@ parser.add_argument('--equivariance',
                     choices=['verb', 'verb_order', 'verb_length', 'direction', 'verb+direction', 'none'])
 # Optimization and training hyper-parameters
 parser.add_argument('--split', 
-                    choices=[None, 'simple', 'add_jump', 
-                             'length_generalization', 'around_right', 
-                             'opposite_right'],
+                    choices=[None, 'simple', 'add_book'],
                     help='Each possible split defines a different experiment as proposed by [1]')
 parser.add_argument('--weight_decay', 
                     type=float, 
@@ -184,14 +182,14 @@ def train(batch,
 
 if __name__ == '__main__':
     # Load data
-    train_pairs, test_pairs = get_scan_split(split=args.split)
+    train_pairs, test_pairs = get_engfra_split(split=args.split)
     if args.equivariance == 'noun':
-        in_equivariances = ['tom', 'something', 'book', 'car', 'time', 'problem', 'everyone', 'house', 'door']
-        out_equivariances = ['tom', 'chose', 'livre', 'voiture', 'temps', 'probleme', 'monde', 'maison', 'porte']
+        in_equivariances = ["tom","something","book","car","time","problem","everyone","house","door","friends"]
+        out_equivariances = ["tom","chose","livre", "voiture", "temps", "probleme", "monde", "maison", "porte", "amis"]
     else:
         in_equivariances, out_equivariances = [], []
     eng_lang, fra_lang = \
-        get_equivariant_scan_languages(pairs=train_pairs,
+        get_equivariant_engfra_languages(pairs=train_pairs,
                                        input_equivariances=in_equivariances,
                                        output_equivariances=out_equivariances)
 
