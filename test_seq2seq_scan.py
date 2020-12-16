@@ -8,7 +8,7 @@ import torch
 
 import perm_equivariant_seq2seq.utils as utils
 from perm_equivariant_seq2seq.models import BasicSeq2Seq
-from perm_equivariant_seq2seq.data_utils import get_scan_split, get_invariant_scan_languages
+from perm_equivariant_seq2seq.scan_data_utils import get_scan_split, get_invariant_scan_languages
 from perm_equivariant_seq2seq.utils import tensors_from_pair, tensor_from_sentence
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -201,7 +201,7 @@ if __name__ == '__main__':
 
     # Load data
     train_pairs, test_pairs = get_scan_split(split=experiment_arguments.split)
-    commands, actions = get_invariant_scan_languages(train_pairs, [])
+    commands, actions = get_invariant_scan_languages(train_pairs)
 
     # Initialize model
     model = BasicSeq2Seq(input_language=commands,

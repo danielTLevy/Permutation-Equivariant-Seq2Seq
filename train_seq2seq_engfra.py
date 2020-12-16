@@ -1,4 +1,5 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+# -*- coding: utf-8 -*-
+
 import random
 import argparse
 import os
@@ -9,15 +10,10 @@ import torch.nn as nn
 
 import perm_equivariant_seq2seq.utils as utils
 from perm_equivariant_seq2seq.models import BasicSeq2Seq
+from perm_equivariant_seq2seq.engfra_data_utils import get_engfra_split, get_invariant_engfra_languages
 from perm_equivariant_seq2seq.utils import tensors_from_pair
-from perm_equivariant_seq2seq.scan_data_utils import get_scan_split, get_invariant_scan_languages
 
-"""
-[1]: Lake and Baroni 2019: Generalization without systematicity: On the 
-compositional skills of seq2seq networks
-[2]: Bahdanau et al. 2014: Neural machine translation by jointly learning to 
-align and translate
-"""
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 SOS_token = 0
@@ -58,6 +54,7 @@ parser.add_argument('--drop_rate',
                     help="Dropout drop rate (not keep rate)")
 # Optimization and training hyper-parameters
 parser.add_argument('--split', 
+                    default='simple',
                     choices=[None, 'simple', 'add_jump', 'length_generalization'],
                     help='Each possible split defines a different experiment as proposed by [1]')
 parser.add_argument('--validation_size', 
@@ -191,8 +188,8 @@ def test_accuracy(model_to_test, pairs):
 
 if __name__ == '__main__':
     # Load data
-    train_pairs, test_pairs = get_scan_split(split=args.split)
-    commands, actions = get_invariant_scan_languages(train_pairs)
+    train_pairs, test_pairs = get_engfra_split(split=args.split)
+    commands, actions = get_invariant_engfra_languages(train_pairs)
 
     # Initialize model
     model = BasicSeq2Seq(input_language=commands,

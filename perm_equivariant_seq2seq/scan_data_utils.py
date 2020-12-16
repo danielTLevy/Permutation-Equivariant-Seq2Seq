@@ -28,7 +28,7 @@ def read_scan_data(path):
     return pairs
 
 
-def get_invariant_scan_languages(pairs, invariances):
+def get_invariant_scan_languages(pairs):
     # Initialize language classes
     input_lang = Language('commands')
     output_lang = Language('actions')
