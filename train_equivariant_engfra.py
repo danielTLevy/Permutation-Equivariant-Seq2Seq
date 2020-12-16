@@ -189,7 +189,7 @@ if __name__ == '__main__':
     else:
         in_equivariances, out_equivariances = [], []
     eng_lang, fra_lang = \
-        get_equivariant_engfra_languages(pairs=train_pairs,
+        get_equivariant_engfra_languages(pairs=train_pairs+test_pairs,
                                        input_equivariances=in_equivariances,
                                        output_equivariances=out_equivariances)
 
@@ -240,7 +240,7 @@ if __name__ == '__main__':
     plot_loss_total = 0
 
     # Enter training loop
-    best_acc = 0.
+    best_bleu = 0.
     model_path = utils.create_exp_dir(args)
     progress = tqdm(enumerate(pair_generator(training_pairs, args.batch_size)),
                     desc="Loss: ", total=int(len(training_pairs)/args.batch_size), position=0, leave=True)
@@ -264,13 +264,14 @@ if __name__ == '__main__':
         if (iteration + 1) % args.save_freq == 0:
             # save model if is better
             if args.validation_size > 0.:
-                val_acc = test_accuracy(model, validation_pairs).item()
-                if val_acc > best_acc:
-                    best_acc = val_acc
+                val_acc, val_bleu = test_accuracy(model, validation_pairs, True).item()
+                if val_bleu > best_bleu:
+                    best_bleu = val_bleu
                     save_path = os.path.join(model_path, 'best_validation.pt')
-                    print('\nBest validation accuracy at iteration %s: %s' % (iteration + 1, val_acc))
+                    print('\nBest BLEU score at iteration %s: %s' % (iteration + 1, val_bleu))
                     torch.save(model.state_dict(), save_path)
-
+                else:
+                    print('\nNew validation BLEU %s worse than previous best %s' % (val_bleu, best_bleu))
     # Save fully trained model
     save_path = os.path.join(model_path, 'model_fully_trained.pt')
     torch.save(model.state_dict(), save_path)

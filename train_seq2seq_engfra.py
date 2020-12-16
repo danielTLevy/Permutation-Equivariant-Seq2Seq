@@ -154,13 +154,13 @@ def train(input_tensor,
 if __name__ == '__main__':
     # Load data
     train_pairs, test_pairs = get_engfra_split(split=args.split)
-    commands, actions = get_invariant_engfra_languages(train_pairs)
+    eng_lang, fra_lang = get_invariant_engfra_languages(train_pairs + test_pairs)
 
     # Initialize model
-    model = BasicSeq2Seq(input_language=commands,
+    model = BasicSeq2Seq(input_language=eng_lang,
                          encoder_hidden_size=args.hidden_size,
                          decoder_hidden_size=args.semantic_size,
-                         output_language=actions,
+                         output_language=fra_lang,
                          layer_type=args.layer_type,
                          use_attention=args.use_attention,
                          drop_rate=args.drop_rate,
@@ -180,13 +180,13 @@ if __name__ == '__main__':
     train_pairs, val_pairs = train_pairs[val_size:], train_pairs[:val_size]
 
     # Convert data to torch tensors
-    training_pairs = [tensors_from_pair(random.choice(train_pairs), commands, actions)
+    training_pairs = [tensors_from_pair(random.choice(train_pairs), eng_lang, fra_lang)
                       for i in range(args.n_iters)]
-    training_eval = [tensors_from_pair(pair, commands, actions) 
+    training_eval = [tensors_from_pair(pair, eng_lang, fra_lang) 
                      for pair in train_pairs]
-    validation_pairs = [tensors_from_pair(pair, commands, actions) 
+    validation_pairs = [tensors_from_pair(pair, eng_lang, fra_lang) 
                         for pair in val_pairs]
-    testing_pairs = [tensors_from_pair(pair, commands, actions) 
+    testing_pairs = [tensors_from_pair(pair, eng_lang, fra_lang) 
                      for pair in test_pairs]
 
     # Initialize criterion
@@ -199,6 +199,7 @@ if __name__ == '__main__':
 
     # Enter training loop
     best_acc = 0.
+    best_bleu = 0.
     model_path = utils.create_exp_dir(args)
     progress = tqdm(range(1, args.n_iters + 1),
                 desc="Loss: ", total=args.n_iters, position=0, leave=True)
@@ -226,11 +227,11 @@ if __name__ == '__main__':
         if iteration % args.save_freq == 0:
             # save model if is better
             if args.validation_size > 0.:
-                val_acc = test_accuracy(model, validation_pairs).item()
-                if val_acc > best_acc:
+                val_acc, val_bleu = test_accuracy(model, validation_pairs, True).item()
+                if val_bleu > best_bleu:
                     best_acc = val_acc
                     save_path = os.path.join(model_path, 'best_validation.pt')
-                    print('\nBest validation accuracy at iteration %s: %s' % (iteration + 1, val_acc))
+                    print('\nBest BLEU score at iteration %s: %s' % (iteration + 1, val_bleu))
                     save_path = os.path.join(model_path, 'model_trained_%s.pt' % iteration)
                     torch.save(model.state_dict(), save_path)
                 else:
