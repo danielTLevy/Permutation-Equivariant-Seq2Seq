@@ -11,6 +11,7 @@ import perm_equivariant_seq2seq.utils as utils
 from perm_equivariant_seq2seq.models import BasicSeq2Seq
 from perm_equivariant_seq2seq.utils import tensors_from_pair
 from perm_equivariant_seq2seq.scan_data_utils import get_scan_split, get_invariant_scan_languages
+from test_utils import test_accuracy
 
 """
 [1]: Lake and Baroni 2019: Generalization without systematicity: On the 
@@ -151,42 +152,6 @@ def train(input_tensor,
     dec_optimizer.step()
 
     return train_loss.item() / target_length
-
-
-def test_accuracy(model_to_test, pairs):
-    """Test a model (metric: accuracy) on all pairs in _pairs_
-
-    Args:
-        model_to_test: (seq2seq) Model object to be tested
-        pairs: (list::pairs) List of list of input/output language pairs
-    Returns:
-        (float) accuracy on test pairs
-    """
-
-    def sentence_correct(target, model_sentence):
-        # First, extract sentence up to EOS
-        _, sentence_ints = model_sentence.data.topk(1)
-        # If there is no EOS token, take the complete list
-        try:
-            eos_location = torch.nonzero(sentence_ints == EOS_token)[0][0]
-        except:
-            eos_location = len(sentence_ints) - 2
-        model_sentence = sentence_ints[:eos_location + 1]
-        # Check length is correct
-        if len(model_sentence) != len(target):
-            return torch.tensor(0, device=device)
-        else:
-            correct = model_sentence == target
-            return torch.prod(correct).to(device)
-
-    accuracies = []
-    model.eval()
-    with torch.no_grad():
-        for pair in pairs:
-            input_tensor, output_tensor = pair
-            model_output = model_to_test(input_tensor=input_tensor)
-            accuracies.append(sentence_correct(output_tensor, model_output))
-    return torch.stack(accuracies).type(torch.float).mean()
 
 
 if __name__ == '__main__':

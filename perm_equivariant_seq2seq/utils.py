@@ -103,6 +103,6 @@ def load_args_from_txt(parser, args_dir):
     with open(args_dir) as f:
         commands = f.read()
     list_of_lists = [command.split('=') for command in commands.split('\n')]
-    flat_list_of_commands = [item for sublist in list_of_lists for item in sublist]
+    flat_list_of_commands = [item for sublist in list_of_lists for item in sublist if item != ""]
     return parser.parse_args(flat_list_of_commands)
 
