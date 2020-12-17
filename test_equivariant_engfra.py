@@ -10,7 +10,7 @@ import torch
 import perm_equivariant_seq2seq.utils as utils
 from perm_equivariant_seq2seq.equivariant_models import EquiSeq2Seq
 from perm_equivariant_seq2seq.engfra_data_utils import get_engfra_split, get_equivariant_engfra_languages, get_equivariances, splits
-from perm_equivariant_seq2seq.utils import tensors_from_pair, 
+from perm_equivariant_seq2seq.utils import tensors_from_pair
 from perm_equivariant_seq2seq.symmetry_groups import get_permutation_equivariance
 from test_utils import test_accuracy, evaluate
 

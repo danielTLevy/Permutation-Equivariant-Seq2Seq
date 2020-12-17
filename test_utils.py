@@ -3,7 +3,7 @@ import torch
 from tqdm import tqdm
 import numpy as np
 from perm_equivariant_seq2seq.utils import tensor_from_sentence
-from nltk.translate.bleu_score import sentence_bleu
+from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 SOS_token = 0
@@ -28,10 +28,10 @@ def test_accuracy(model_to_test, pairs, use_bleu=False):
             eos_location = len(sentence_ints) - 2
         return sentence_ints[:eos_location+1]    
         
-    def bleu_score(target, model_sentence):
+    def bleu_score(target, model_sentence, smoothing):
         reference = [[i.item() for i in target]]
         candidate =  [i.item() for i in model_sentence]
-        return sentence_bleu(reference, candidate)
+        return sentence_bleu(reference, candidate, smoothing_function=smoothing)
 
     
     def sentence_correct(target, model_sentence):
@@ -43,16 +43,17 @@ def test_accuracy(model_to_test, pairs, use_bleu=False):
 
     accuracies = []
     bleu_scores = []
+    smoothing_fcn = SmoothingFunction().method1
     model_to_test.eval()
     with torch.no_grad():
-        progress = tqdm(pairs,  desc="Loss: ", position=0, leave=True)
-        for pair in progress:
+        #progress = tqdm(pairs,  desc="Loss: ", position=0, leave=True)
+        for pair in pairs:
             input_tensor, output_tensor = pair
             model_output = model_to_test(input_tensor=input_tensor)
             model_sentence = get_model_sentence(model_output)
             accuracies.append(sentence_correct(output_tensor, model_sentence))
             if use_bleu:
-                bleu_scores.append(bleu_score(output_tensor, model_sentence))
+                bleu_scores.append(bleu_score(output_tensor, model_sentence, smoothing_fcn))
     mean_accuracy = torch.stack(accuracies).type(torch.float).mean().item()
     if use_bleu:
         mean_bleu = np.mean(bleu_scores)
@@ -63,7 +64,9 @@ def test_accuracy(model_to_test, pairs, use_bleu=False):
 def evaluate(model_to_eval,
              inp_lang,
              out_lang,
-             sentence):
+             sentence,
+             use_bleu=False,
+             true_output = None):
     """Decode one sentence from input -> output language with the model
 
     Args:
@@ -84,9 +87,14 @@ def evaluate(model_to_eval,
         for di in range(model_to_eval.max_length):
             topv, topi = model_output[di].data.topk(1)
             if topi.item() == EOS_token:
-                decoded_words.append('<EOS>')
+                #decoded_words.append('<EOS>')
                 break
             else:
                 decoded_words.append(out_lang.index2word[topi.item()])
-        return decoded_words
+        if use_bleu:
+            smooth = SmoothingFunction()
+            bleu_score = sentence_bleu([true_output.split(' ')], decoded_words, smoothing_function=smooth.method1)
+            return decoded_words, bleu_score
+        else:
+            return decoded_words
 

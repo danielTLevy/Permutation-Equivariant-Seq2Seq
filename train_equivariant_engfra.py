@@ -27,7 +27,7 @@ align and translate
 by saparating syntax and semantics
 """
 os.environ["WANDB_MODE"] = "dryrun"
-wandb.init(project="equi_seq2seq", entity="teamname")
+wandb.init(project="equi_seq2seq", entity="danieltlevy")
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -199,7 +199,7 @@ if __name__ == '__main__':
     print("making symmetry group")
     input_symmetry_group = get_permutation_equivariance(eng_lang)
     output_symmetry_group = get_permutation_equivariance(fra_lang)
-
+    print("symmetry groups made")
     # Initialize model
     model = EquiSeq2Seq(input_symmetry_group=input_symmetry_group,
                         output_symmetry_group=output_symmetry_group,
@@ -210,9 +210,11 @@ if __name__ == '__main__':
                         layer_type=args.layer_type,
                         use_attention=args.use_attention,
                         bidirectional=args.bidirectional)
+    print("model made")
     model.to(device)
+    print("model to device")
     wandb.watch(model)
-
+    print("watching model")
     # Initialize optimizers
     encoder_optimizer = torch.optim.Adam(model.encoder.parameters(),
                                          lr=args.learning_rate,
@@ -273,7 +275,6 @@ if __name__ == '__main__':
             # save model if is better
             if args.validation_size > 0.:
                 val_acc, val_bleu = test_accuracy(model, validation_pairs, True)
-                val_acc = val_acc
                 wandb.log({"Validation Accuracy": val_acc, "Validation BLEU": val_bleu})
                 if val_bleu > best_bleu:
                     best_bleu = val_bleu
