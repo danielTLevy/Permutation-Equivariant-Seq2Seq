@@ -11,10 +11,27 @@ from perm_equivariant_seq2seq.language_utils import Language, InvariantLanguage,
 
 SOS_token = 0
 EOS_token = 1
+equivariances = [None, 'noun', 'booktom', 'booktomcar']
+splits = [None, 'simple', 'add_book', 'booktom', 'booktomcar']
 
 """
     SCAN Data handling
 """
+
+
+def get_equivariances(equivariance):
+    if equivariance == 'noun':
+        in_equivariances = ["tom","something","book","car","time","problem","everyone","house","door","friends"]
+        out_equivariances = ["tom","chose","livre", "voiture", "temps", "probleme", "monde", "maison", "porte", "amis"]
+    elif equivariance == 'booktom':
+        in_equivariances = ["tom", "book"]
+        out_equivariances = ["tom", "livre"]
+    elif equivariance == 'booktomcar':
+        in_equivariances = ["tom", "book", "car"]
+        out_equivariances = ["tom", "livre", "voiture"]
+    else:
+        in_equivariances = out_equivariances = []
+    return in_equivariances, out_equivariances
 
 def unicode_to_ascii(s):
     return ''.join(
@@ -75,16 +92,26 @@ def get_equivariant_engfra_languages(pairs, input_equivariances, output_equivari
 
 
 def get_engfra_split(split=None):
-    assert split in ['simple', 'add_book'], \
+    assert split in splits, \
         "Please choose valid experiment split"
     DATA_DIR = 'POStagging/'
 
     # Simple (non-generalization) split
     if split == 'simple':
-        data_path = os.path.join(DATA_DIR, 'ouputNounsShuffled')
+        print("80 20 train and test on top 10 nouns")
+        dir_name = 'ouputNounsShuffled'
     elif split == 'add_book':
-        data_path = os.path.join(DATA_DIR, 'outputNounsSplitByBook')
-
+        print("Train on top 10 nouns, test on book")
+        dir_name = 'outputNounsSplitByBook'
+    elif split == 'booktom':
+        print("80 20 split on book and tom")
+        dir_name = 'output6booktom'
+    elif split == 'booktomcar':
+        print("train on book and tom, test on car")
+        dir_name = "output7booktomcar"
+    else:
+        dir_name = "ouputNounsShuffled"
+    data_path = os.path.join(DATA_DIR, dir_name)
     # Load data
     #all_pairs = read_engfra_data(data_path)
     training_pairs, test_pairs = read_train_and_test(data_path)

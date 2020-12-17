@@ -12,7 +12,8 @@ import wandb
 
 import perm_equivariant_seq2seq.utils as utils
 from perm_equivariant_seq2seq.equivariant_models import EquiSeq2Seq
-from perm_equivariant_seq2seq.engfra_data_utils import get_engfra_split, get_equivariant_engfra_languages
+from perm_equivariant_seq2seq.engfra_data_utils import get_engfra_split, get_equivariant_engfra_languages, get_equivariances
+from perm_equivariant_seq2seq.engfra_data_utils import equivariances, splits
 from perm_equivariant_seq2seq.utils import tensors_from_pair
 from perm_equivariant_seq2seq.symmetry_groups import get_permutation_equivariance
 from test_utils import test_accuracy
@@ -46,20 +47,20 @@ parser.add_argument('--layer_type',
                     help='Type of rnn layers to be used for recurrent components')
 parser.add_argument('--use_attention', 
                     dest='use_attention', 
-                    default=False, 
+                    default=True, 
                     action='store_true',
                     help="Boolean to use attention in the decoder")
 parser.add_argument('--bidirectional', 
                     dest='bidirectional', 
-                    default=False, 
+                    default=True, 
                     action='store_true',
                     help="Boolean to use bidirectional encoder.")
 # Equivariance options:
 parser.add_argument('--equivariance', 
-                    choices=['noun', 'verb', 'none'])
+                    choices=equivariances)
 # Optimization and training hyper-parameters
 parser.add_argument('--split', 
-                    choices=[None, 'simple', 'add_book'],
+                    choices=splits,
                     help='Each possible split defines a different experiment as proposed by [1]')
 parser.add_argument('--weight_decay', 
                     type=float, 
@@ -189,11 +190,8 @@ if __name__ == '__main__':
     # Load data
     train_pairs, test_pairs = get_engfra_split(split=args.split)
     print("Got training and testing pairs")
-    if args.equivariance == 'noun':
-        in_equivariances = ["tom","something","book","car","time","problem","everyone","house","door","friends"]
-        out_equivariances = ["tom","chose","livre", "voiture", "temps", "probleme", "monde", "maison", "porte", "amis"]
-    else:
-        in_equivariances, out_equivariances = [], []
+
+    in_equivariances, out_equivariances = get_equivariances(args.equivariance)
     eng_lang, fra_lang = \
         get_equivariant_engfra_languages(pairs=train_pairs+test_pairs,
                                        input_equivariances=in_equivariances,

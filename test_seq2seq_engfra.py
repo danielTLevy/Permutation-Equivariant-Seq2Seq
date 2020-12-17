@@ -7,7 +7,7 @@ import torch
 
 import perm_equivariant_seq2seq.utils as utils
 from perm_equivariant_seq2seq.models import BasicSeq2Seq
-from perm_equivariant_seq2seq.engfra_data_utils import get_engfra_split, get_invariant_engfra_languages
+from perm_equivariant_seq2seq.engfra_data_utils import get_engfra_split, get_invariant_engfra_languages, splits
 from perm_equivariant_seq2seq.utils import tensors_from_pair
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -82,7 +82,7 @@ parser.add_argument('--drop_rate',
                     help="Dropout drop rate (not keep rate)")
 # Optimization and training hyper-parameters
 parser.add_argument('--split', 
-                    choices=[None, 'simple', 'add_book', 'length_generalization'],
+                    choices=splits,
                     help='Each possible split defines a different experiment as proposed by [1]')
 parser.add_argument('--validation_size', 
                     type=float, 

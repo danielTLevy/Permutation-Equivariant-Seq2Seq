@@ -9,7 +9,7 @@ import torch
 
 import perm_equivariant_seq2seq.utils as utils
 from perm_equivariant_seq2seq.equivariant_models import EquiSeq2Seq
-from perm_equivariant_seq2seq.engfra_data_utils import get_engfra_split, get_equivariant_engfra_languages
+from perm_equivariant_seq2seq.engfra_data_utils import get_engfra_split, get_equivariant_engfra_languages, get_equivariances, splits
 from perm_equivariant_seq2seq.utils import tensors_from_pair, 
 from perm_equivariant_seq2seq.symmetry_groups import get_permutation_equivariance
 from test_utils import test_accuracy, evaluate
@@ -81,11 +81,11 @@ parser.add_argument('--bidirectional',
                     help="Boolean to use bidirectional encoder.")
 # Equivariance options:
 parser.add_argument('--equivariance', 
-                    choices=['noun', 'none'])
+                    choices=equivariances)
 # Optimization and training hyper-parameters
 parser.add_argument('--split', 
                     help='Each possible split defines a different experiment as proposed by [1]',
-                    choices=[None, 'simple'])
+                    choices=splits)
 parser.add_argument('--weight_decay', 
                     type=float, 
                     default=0., 
@@ -144,11 +144,7 @@ if __name__ == '__main__':
     # Load data
     train_pairs, test_pairs = get_engfra_split(split=experiment_arguments.split)
 
-    if experiment_arguments.equivariance == 'noun':
-        in_equivariances = ['tom', 'something', 'book', 'car', 'time', 'problem', 'everyone', 'house', 'door']
-        out_equivariances = ['tom', 'chose', 'livre', 'voiture', 'temps', 'probleme', 'monde', 'maison', 'porte']
-    else:
-        in_equivariances, out_equivariances = [], []
+    in_equivariances, out_equivariances = get_equivariances(experiment_arguments.equivariance)
     equivariant_eng, equivariant_fra = \
         get_equivariant_engfra_languages(pairs=train_pairs+test_pairs,
                                        input_equivariances=in_equivariances,
