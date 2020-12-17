@@ -49,8 +49,9 @@ class WordConv(nn.Module):
         return self.embedding(permutation_indices).squeeze()
 
     def permute_word(self, word):
-        return torch.stack([word @ self.symmetry_group.index2inverse[i]
-                            for i in range(self.symmetry_group.size)], dim=1)
+        permute_word_out = torch.cat([word[:, perm] for perm in self.symmetry_group.permutation_lists], dim=0)
+        return permute_word_out
+
 
 
 class GroupClassifier(WordConv):
@@ -112,8 +113,7 @@ class GroupClassifier(WordConv):
 
     def permute_word(self, word):
         """Helper function to return all permutations of a word under the symmetry group"""
-        return torch.cat([word @ self.symmetry_group.index2inverse[h]
-                          for h in range(self.symmetry_group.size)], dim=0)
+        return torch.cat([word[:, perm] for perm in self.symmetry_group.permutation_lists], dim=0)
 
 
 class GroupConv(nn.Module):
@@ -162,7 +162,7 @@ class GroupConv(nn.Module):
         return (ipt * conv_filter).sum(2).sum(2) + self.bias
 
     def get_conv_filter(self):
-        return torch.stack([torch.index_select(self.weight, 0, self.symmetry_group.index2inverse_indices[g])
+        return torch.stack([torch.index_select(self.weight, 0, self.symmetry_group.permutation_indices[g])
                             for g in range(self.symmetry_group.size)])
 
     def _init_parameters(self):

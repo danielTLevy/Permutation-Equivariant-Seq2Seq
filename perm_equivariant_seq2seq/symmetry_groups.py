@@ -52,15 +52,15 @@ class PermutationSymmetry:
         self.num_letters = num_letters
 
         # Define identity element for the group
-        self.e = torch.eye(self.num_letters, dtype=torch.float64).to(device)
-        self.perm_matrices = [self.e]
+        #self.e = torch.eye(self.num_letters, dtype=torch.float64).to(device)
+        self.permutation_lists = [np.arange(num_letters)]
 
     def in_group(self, perm_matrix):
         return np.sum([torch.allclose(perm_matrix, mat) for mat in self.perm_matrices]) > 0
 
     @property
     def size(self):
-        return len(self.perm_matrices)
+        return len(self.permutation_lists)
 
     def mat2index(self, mat):
         """Get the group index of a matrix if it is in the group
@@ -92,24 +92,20 @@ class CircularShift(PermutationSymmetry):
         self.num_equivariant = num_equivariant
         self.first_equivariant = first_equivariant
         self.last_equivariant = first_equivariant + num_equivariant
-
-        # Define initial shift
-        self.init_perm = [(i, i + 1) for i in range(self.first_equivariant, self.last_equivariant - 1)]
-        self.init_perm += [(self.last_equivariant - 1, self.first_equivariant)]
-        self.tau1 = get_permutation_matrix(self.num_letters, self.init_perm)
-        self.perm_matrices.append(self.tau1)
-        for _ in range(self.num_equivariant - 2):
-            perm_mat = self.perm_matrices[-1] @ self.tau1
-            self.perm_matrices.append(perm_mat)
-
-        self.index2mat, self.index2inverse, self.index2inverse_indices = {}, {}, {}
-        for idx, mat in enumerate(self.perm_matrices):
-            self.index2mat[idx] = mat
-            self.index2inverse[idx] = torch.pinverse(mat)
-            self.index2inverse_indices[idx] = torch.tensor(
-                [self.mat2index(torch.pinverse(mat) @ h) for h in self.perm_matrices],
-                dtype=torch.long
-            ).to(device)
+        
+        perm_indices = []
+        perm_lists = []        
+        for i in range(num_equivariant):
+            perm_index = (np.arange(num_equivariant) - i) % num_equivariant
+            perm_list = np.arange(num_letters)
+            perm_list[first_equivariant:self.last_equivariant] = perm_index + first_equivariant
+            perm_index = torch.tensor(perm_index, dtype=torch.long).to(device)
+            perm_indices.append(perm_index)
+            perm_list = torch.tensor(perm_list, dtype=torch.long).to(device)
+            perm_lists.append(perm_list)
+            
+        self.permutation_indices = perm_indices
+        self.permutation_lists = perm_lists
 
 
 class VerbDirectionSCAN(PermutationSymmetry):
