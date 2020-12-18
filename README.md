@@ -15,7 +15,19 @@ This code requires the following:
 2. Enter top level directory ```cd Permutation-Equivariant-Seq2Seq```
 3. Install SCAN dataset: clone the [SCAN](https://github.com/brendenlake/SCAN) repository into top level directory.
 
-## Usage
+## Usage (Levy, Humane, Belkebir)
+To run the code for the COMP 550 Final Project:
+
+Run ```python train_equivariant_engfra.py --equivariance bookcarhouse``` for an equivariant seq2seq network, ```python train_seq2seq_engfra.py``` for a standard seq2seq.
+
+If using the "add house" task, add the argument ```--split add_house```. Otherwise, for a normal translation task, add the flag ```--split bookcarhouse```
+
+To test the code,run:
+```python test_equivariant_engfra.py`` for an equivariant seq2seq network,
+```python test_seq2seq_engfra.py``` for a standard seq2seq.
+It will list instructions on how to retrieve the model you wish to test, whether to print training accuracy, test accuracy, or example sentences, and more
+
+## Usage (Gordon et al.)
 To reproduce the paper experiments with a permutation equivariant sequence-2-sequence model on SCAN, run the following commands:
 
 1. "Simple Split" with verb equivariance:
