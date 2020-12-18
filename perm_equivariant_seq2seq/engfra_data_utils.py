@@ -11,8 +11,8 @@ from perm_equivariant_seq2seq.language_utils import Language, InvariantLanguage,
 
 SOS_token = 0
 EOS_token = 1
-equivariances = [None, 'noun', 'booktom', 'booktomcar']
-splits = [None, 'simple', 'add_book', 'booktom', 'booktomcar']
+equivariances = [None, 'noun', 'booktom', 'booktomcar', 'bookcarhouse']
+splits = [None, 'simple', 'add_book', 'booktom', 'booktomcar', 'add_house', 'bookcarhouse']
 
 """
     SCAN Data handling
@@ -29,6 +29,9 @@ def get_equivariances(equivariance):
     elif equivariance == 'booktomcar':
         in_equivariances = ["tom", "book", "car"]
         out_equivariances = ["tom", "livre", "voiture"]
+    elif equivariance == 'bookcarhouse':
+        in_equivariances = ["book", "car", "house"]
+        out_equivariances = ["livre", "voiture", "maison"]
     else:
         in_equivariances = out_equivariances = []
     return in_equivariances, out_equivariances
@@ -109,6 +112,12 @@ def get_engfra_split(split=None):
     elif split == 'booktomcar':
         print("train on book and tom, test on car")
         dir_name = "output7booktomcar"
+    elif split == 'add_house':
+        print("train on book and car, test on house")
+        dir_name = "outputBookCarVsHouse"
+    elif split == 'bookcarhouse':
+        print("80 20 split on book, car, house")
+        dir_name = "outputBookCarHouseShuffled"     
     else:
         dir_name = "ouputNounsShuffled"
     data_path = os.path.join(DATA_DIR, dir_name)

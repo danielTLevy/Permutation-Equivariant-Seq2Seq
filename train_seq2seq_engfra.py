@@ -233,6 +233,8 @@ if __name__ == '__main__':
 
         if iteration % args.save_freq == 0:
             # save model if is better
+            it_save_path = os.path.join(model_path, "model_iteration%s.pt" % iteration)
+            torch.save(model.state_dict(), it_save_path)
             if args.validation_size > 0.:
                 val_acc, val_bleu = test_accuracy(model, validation_pairs, True)
                 wandb.log({"Validation Accuracy": val_acc, "Validation BLEU": val_bleu})

@@ -50,6 +50,12 @@ parser.add_argument('--print_param_nums',
                     default=False, 
                     action='store_true',
                     help="Print the number of model parameters")
+parser.add_argument('--p_new_prim',
+                    dest='p_new_prim',
+                    default=0.1,
+                    help="Proportion of training samples to make new primitive pair",
+                    type=float
+                    )
 args = parser.parse_args()
 # Model options
 parser.add_argument('--layer_type',
@@ -171,15 +177,15 @@ def train(input_tensor,
 
     return train_loss.item() / target_length
 
-def train_new_prim(model_to_train, training_pairs, args):
+def train_new_prim(model_to_train, new_pairs, args):
         encoder_optimizer = torch.optim.Adam(model_to_train.encoder.parameters(), 
                                          lr=args.learning_rate)
         decoder_optimizer = torch.optim.Adam(model_to_train.decoder.parameters(), 
                                          lr=args.learning_rate)
         criterion = nn.NLLLoss().to(device)
-        progress = tqdm(range(len(new_prim_training_pairs)), position=0, leave=True)
+        progress = tqdm(range(len(new_pairs)), position=0, leave=True)
         for i in progress:
-            training_pair = new_prim_training_pairs[i - 1]
+            training_pair = new_pairs[i - 1]
             iteration_input, iteration_output = training_pair
             loss = train(input_tensor=iteration_input,
                          target_tensor=iteration_output,
@@ -206,6 +212,11 @@ if __name__ == '__main__':
     train_pairs, test_pairs = get_engfra_split(split=experiment_arguments.split)
     eng_lang, fra_lang = get_invariant_engfra_languages(train_pairs+test_pairs)
 
+    if experiment_arguments.split == "add_book":
+        new_prim_pair = ['book', 'livre']
+    elif experiment_arguments.split == "add_house":
+        new_prim_pair = ['house', 'maison']
+
     # Initialize model
     model = BasicSeq2Seq(input_language=eng_lang,
                          encoder_hidden_size=experiment_arguments.hidden_size,
@@ -221,8 +232,7 @@ if __name__ == '__main__':
     model.to(device)
     model.load_state_dict(torch.load(model_path))
     
-    if experiment_arguments.split == "add_book":
-        new_prim_pair = ['book', 'livre']
+
     
     # Convert data to torch tensors
     training_eval = [tensors_from_pair(pair, eng_lang, fra_lang) 
@@ -230,8 +240,9 @@ if __name__ == '__main__':
     testing_pairs = [tensors_from_pair(pair, eng_lang, fra_lang) 
                      for pair in test_pairs]
     
-    if experiment_arguments.split in ["add_book"]:
-        new_prim_training_pairs = [tensors_from_pair(new_prim_pair, eng_lang, fra_lang)]*int(0.1*len(training_eval))
+    if experiment_arguments.split in ["add_book", "add_house"]:
+        num_new_prim_pairs = int(args.p_new_prim*len(training_eval))
+        new_prim_training_pairs = [tensors_from_pair(new_prim_pair, eng_lang, fra_lang)]*num_new_prim_pairs
         model = train_new_prim(model, new_prim_training_pairs, experiment_arguments)
 
     # Compute accuracy and print some translations

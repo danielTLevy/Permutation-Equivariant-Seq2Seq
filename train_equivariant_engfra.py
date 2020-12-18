@@ -95,7 +95,7 @@ parser.add_argument('--print_freq',
                     help='Frequency with which to print training loss')
 parser.add_argument('--save_freq', 
                     type=int, 
-                    default=2000,
+                    default=1000,
                     help='Frequency with which to save models during training')
 args = parser.parse_args()
 
@@ -273,6 +273,8 @@ if __name__ == '__main__':
 
         if (iteration + 1) % args.save_freq == 0:
             # save model if is better
+            it_save_path = os.path.join(model_path, "model_iteration%s.pt" % iteration)
+            torch.save(model.state_dict(), it_save_path)
             if args.validation_size > 0.:
                 val_acc, val_bleu = test_accuracy(model, validation_pairs, True)
                 wandb.log({"Validation Accuracy": val_acc, "Validation BLEU": val_bleu})
@@ -283,6 +285,7 @@ if __name__ == '__main__':
                     print('\nBest validation BLEU score at iteration %s: %s' % (iteration + 1, val_bleu))
                     torch.save(model.state_dict(), save_path)
                     torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
+                    
                     
                 else:
                     print('\nNew validation BLEU %s worse than previous best %s' % (val_bleu, best_bleu))
