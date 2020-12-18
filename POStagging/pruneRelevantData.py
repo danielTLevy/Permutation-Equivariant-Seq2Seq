@@ -2,8 +2,8 @@ from ImportData import pairs
 from sklearn.model_selection import train_test_split
 import pickle
 
-english_nouns = ["tom","something","book","car","time","problem","everyone","house","door","friends"]
-french_nouns = ["tom","chose","livre", "voiture", "temps", "probleme", "monde", "maison", "porte", "amis"]
+english_nouns = ["book","car","house"]
+french_nouns = ["livre", "voiture", "maison"]
 
 X = []
 y = []
@@ -18,8 +18,8 @@ print(len(y))
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20,shuffle=True, random_state=42)
 
-print(X_test)
-print(y_test)
+#print(X_test)
+#print(y_test)
 
 with open('output2/X_train.data', 'wb') as f:
     pickle.dump(X_train, f)
